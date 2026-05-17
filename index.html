@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sunbot Growth Portal v5.1</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+    :root {
+      --orange-900:#7c2d12;
+      --orange-800:#9a3412;
+      --orange-700:#c2410c;
+      --orange-600:#ea580c;
+      --orange-500:#f97316;
+      --orange-400:#fb923c;
+      --orange-300:#fdba74;
+      --orange-200:#fed7aa;
+      --orange-100:#ffedd5;
+      --orange-50:#fff7ed;
+      --slate-900:#0f172a;
+      --slate-800:#1e293b;
+      --slate-700:#334155;
+      --slate-600:#475569;
+      --slate-500:#64748b;
+      --slate-400:#94a3b8;
+      --slate-200:#e2e8f0;
+      --slate-100:#f1f5f9;
+      --white:#ffffff;
+      --green:#047857;
+      --red:#dc2626;
+      --amber:#b45309;
+      --radius:22px;
+      --shadow:0 18px 42px -32px rgba(124,45,18,.42);
+    }
+
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color:var(--slate-700);
+      background:
+        radial-gradient(circle at top left, rgba(251,146,60,.22), transparent 34rem),
+        linear-gradient(180deg, var(--orange-50), #fff 38%, var(--orange-50));
+      min-height:100vh;
+    }
+
+    button, input, select, textarea { font:inherit; }
+    button { cursor:pointer; }
+    a { color:inherit; text-decoration:none; }
+
+    .hidden { display:none !important; }
+    .app-shell { min-height:100vh; }
+    .container { width:min(1240px, calc(100% - 32px)); margin:0 auto; }
+
+    .login-wrap {
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+
+    .login-card {
+      width:min(440px, 100%);
+      background:rgba(255,255,255,.92);
+      border:1px solid var(--orange-200);
+      border-radius:30px;
+      box-shadow:var(--shadow);
+      padding:30px;
+    }
+
+    .sun-icon img { width:100%; height:100%; object-fit:contain; display:block; }
+    .sun-icon {
+      width:64px;height:64px;
+      margin:0 auto;
+      border-radius:22px;
+      background:linear-gradient(135deg,var(--orange-100),var(--orange-300));
+      display:flex;align-items:center;justify-content:center;
+      font-size:38px;
+    }
+
+    .title { margin:16px 0 0; font-size:30px; line-height:1.05; font-weight:900; color:var(--slate-700); text-align:center; }
+    .subtitle { margin:9px 0 0; font-size:14px; color:var(--slate-500); text-align:center; line-height:1.55; }
+
+    .field { display:flex; flex-direction:column; gap:7px; margin-top:16px; }
+    .label { font-size:13px; font-weight:800; color:var(--slate-600); }
+    .input, .select, .textarea {
+      width:100%;
+      border:1px solid var(--orange-200);
+      background:rgba(255,247,237,.45);
+      color:var(--slate-700);
+      border-radius:16px;
+      padding:13px 14px;
+      outline:none;
+      transition:border .15s, box-shadow .15s, background .15s;
+    }
+    .input:focus, .select:focus, .textarea:focus {
+      border-color:var(--orange-400);
+      box-shadow:0 0 0 4px rgba(249,115,22,.12);
+      background:white;
+    }
+
+    .btn {
+      border:1px solid transparent;
+      border-radius:16px;
+      padding:12px 15px;
+      font-weight:850;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:background .15s, border .15s, color .15s, transform .1s, opacity .15s;
+      white-space:nowrap;
+    }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .btn:active { transform:translateY(1px); }
+    .btn-primary {
+      background:var(--orange-500);
+      border-color:var(--orange-600);
+      color:white;
+      box-shadow:0 10px 18px -14px rgba(234,88,12,.8);
+    }
+    .btn-primary:hover { background:var(--orange-600); }
+    .btn-soft {
+      background:var(--orange-50);
+      border-color:var(--orange-200);
+      color:var(--orange-800);
+    }
+    .btn-soft:hover { background:var(--orange-100); border-color:var(--orange-300); }
+    .btn-white {
+      background:white;
+      border-color:var(--orange-200);
+      color:var(--orange-800);
+    }
+    .btn-white:hover { background:var(--orange-50); }
+    .btn-muted {
+      background:var(--slate-100);
+      border-color:var(--slate-200);
+      color:var(--slate-700);
+    }
+
+    .notice {
+      border:1px solid var(--orange-200);
+      background:var(--orange-50);
+      color:var(--slate-600);
+      border-radius:18px;
+      padding:14px;
+      font-size:13px;
+      line-height:1.55;
+      margin-top:18px;
+    }
+    .msg { margin-top:12px; font-size:13px; font-weight:800; text-align:center; }
+    .msg.error { color:var(--red); }
+    .msg.ok { color:var(--green); }
+
+    .topbar {
+      position:sticky; top:0; z-index:30;
+      background:rgba(255,255,255,.9);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--orange-100);
+    }
+    .top-main {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:18px;
+      padding:16px 0 10px;
+    }
+    .kicker {
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.16em;
+      color:var(--orange-600);
+      text-transform:uppercase;
+      margin:0 0 7px;
+    }
+    .app-title {
+      margin:0;
+      font-size:26px;
+      line-height:1.12;
+      color:var(--slate-700);
+      font-weight:900;
+    }
+    .user-line { margin:7px 0 0; color:var(--slate-500); font-size:13px; line-height:1.45; }
+
+    .top-actions { display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+    .nav {
+      display:flex; gap:8px; overflow-x:auto; padding:0 0 14px;
+      scrollbar-width:thin;
+    }
+    .nav-btn {
+      background:white;
+      color:var(--orange-800);
+      border:1px solid var(--orange-200);
+      border-radius:16px;
+      padding:11px 14px;
+      font-weight:850;
+      white-space:nowrap;
+    }
+    .nav-btn:hover { background:var(--orange-50); }
+    .nav-btn.active {
+      background:var(--orange-500);
+      color:white;
+      border-color:var(--orange-600);
+    }
+
+    main { padding:18px 0 34px; }
+    .screen { display:none; }
+    .screen.active { display:block; }
+
+    .card {
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--orange-200);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:20px;
+    }
+    .soft-card {
+      background:var(--orange-50);
+      border:1px solid var(--orange-200);
+      border-radius:18px;
+      padding:15px;
+    }
+    .section-label {
+      display:inline-flex; align-items:center; gap:6px;
+      font-size:11px; font-weight:900; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--orange-600);
+      background:var(--orange-50);
+      border:1px solid var(--orange-200);
+      border-radius:999px;
+      padding:6px 10px;
+    }
+    .h2 { margin:12px 0 0; font-size:23px; line-height:1.2; font-weight:900; color:var(--slate-700); }
+    .h3 { margin:0; font-size:17px; font-weight:900; color:var(--slate-700); }
+    .p { margin:9px 0 0; color:var(--slate-500); font-size:14px; line-height:1.65; }
+    .grid { display:grid; gap:14px; }
+    .grid-2 { grid-template-columns:repeat(2, minmax(0,1fr)); }
+    .grid-3 { grid-template-columns:repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns:repeat(4, minmax(0,1fr)); }
+
+    .stat {
+      padding:16px;
+      border:1px solid var(--orange-100);
+      background:white;
+      border-radius:18px;
+    }
+    .stat-label { margin:0; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--slate-400); font-weight:900; }
+    .stat-val { margin:8px 0 0; font-size:29px; font-weight:900; color:var(--slate-700); }
+    .stat-note { margin:6px 0 0; font-size:12px; color:var(--slate-500); line-height:1.45; }
+
+    .quick-action {
+      text-align:left;
+      background:white;
+      border:1px solid var(--orange-200);
+      border-radius:20px;
+      padding:18px;
+      min-height:126px;
+      transition:background .15s, transform .1s;
+    }
+    .quick-action:hover { background:var(--orange-50); transform:translateY(-1px); }
+    .quick-action h3 { margin:0; color:var(--slate-700); font-size:17px; font-weight:900; }
+    .quick-action p { margin:8px 0 0; color:var(--slate-500); font-size:13px; line-height:1.55; }
+
+    .toolbar {
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:10px;
+      margin-bottom:14px;
+    }
+    .toolbar .input { flex:1; min-width:220px; }
+    .toolbar .select { width:auto; min-width:220px; }
+
+    .pack {
+      margin-bottom:16px;
+    }
+    .pack-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:14px;
+      margin-bottom:14px;
+    }
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      background:var(--orange-50);
+      border:1px solid var(--orange-200);
+      color:var(--orange-800);
+      padding:5px 10px;
+      font-size:12px;
+      font-weight:850;
+    }
+    .doc-card {
+      border:1px solid var(--orange-100);
+      background:white;
+      border-radius:20px;
+      padding:16px;
+    }
+    .doc-title { margin:10px 0 0; color:var(--slate-700); font-weight:900; font-size:15px; line-height:1.35; }
+    .doc-desc { margin:8px 0 0; color:var(--slate-500); font-size:13px; line-height:1.55; }
+    .doc-meta { margin-top:10px; color:var(--slate-500); font-size:12px; line-height:1.5; }
+    .doc-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:13px; }
+
+    .table-wrap { overflow:auto; border:1px solid var(--orange-100); border-radius:18px; }
+    table { width:100%; border-collapse:collapse; min-width:900px; background:white; }
+    th, td { padding:12px; border-bottom:1px solid var(--orange-50); text-align:left; vertical-align:top; font-size:13px; }
+    th { background:var(--orange-50); color:var(--orange-800); font-size:11px; text-transform:uppercase; letter-spacing:.07em; }
+    tr:last-child td { border-bottom:0; }
+
+    .status {
+      display:inline-flex;
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:12px;
+      font-weight:850;
+    }
+    .status.active { background:#ecfdf5; color:#047857; border:1px solid #a7f3d0; }
+    .status.locked { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+    .status.warn { background:#fffbeb; color:#b45309; border:1px solid #fde68a; }
+
+    .modal {
+      position:fixed;
+      inset:0;
+      z-index:80;
+      background:rgba(15,23,42,.76);
+      padding:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .modal-card {
+      width:min(620px,100%);
+      max-height:calc(100vh - 28px);
+      overflow:auto;
+      background:white;
+      border-radius:26px;
+      border:1px solid var(--orange-200);
+      box-shadow:0 30px 60px -30px rgba(15,23,42,.65);
+      padding:20px;
+    }
+    .modal-wide {
+      width:min(1100px,100%);
+      height:calc(100vh - 28px);
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .modal-head {
+      display:flex; justify-content:space-between; gap:12px; align-items:center;
+      padding:12px 14px; border-bottom:1px solid var(--orange-100);
+    }
+    .frame-wrap { flex:1; min-height:0; }
+    iframe { border:0; width:100%; height:100%; background:white; }
+
+    .empty {
+      text-align:center;
+      padding:28px;
+      color:var(--slate-500);
+      border:1px dashed var(--orange-200);
+      border-radius:20px;
+      background:var(--orange-50);
+    }
+
+    @media (max-width:900px) {
+      .top-main { flex-direction:column; }
+      .top-actions { justify-content:flex-start; }
+      .grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
+      .toolbar { flex-direction:column; align-items:stretch; }
+      .toolbar .select { width:100%; }
+      .pack-head { flex-direction:column; }
+      .app-title { font-size:22px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loginScreen" class="login-wrap">
+    <div class="login-card">
+      <div class="sun-icon"><img src="https://static.sunbot.vn/static/images/lesson/11461/logo-sunbot-1.png" alt="Sunbot logo" /></div>
+      <h1 class="title">Sunbot Growth Portal</h1>
+      <p class="subtitle">Không gian tài liệu, cơ hội và đối tác của Sunbot</p>
+
+      <div class="field">
+        <label class="label">Email/ID đăng nhập</label>
+        <input id="loginId" class="input" placeholder="Nhập email hoặc ID được cấp" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label class="label">Mã PIN</label>
+        <input id="loginPin" class="input" placeholder="Nhập mã PIN" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') login()" />
+      </div>
+
+      <button id="loginBtn" class="btn btn-primary" style="width:100%; margin-top:18px;" onclick="login()">Đăng nhập</button>
+      <div id="loginMsg" class="msg"></div>
+
+      <div class="notice">
+        Nhập Email/ID và Mã PIN được Sunbot cấp riêng. Tài khoản dùng riêng để hệ thống ghi nhận đúng hoạt động.
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="app-shell hidden">
+    <header class="topbar">
+      <div class="container">
+        <div class="top-main">
+          <div style="display:flex; gap:12px; align-items:flex-start;">
+            <img src="https://static.sunbot.vn/static/images/lesson/11461/logo-sunbot-1.png" alt="Sunbot logo" style="width:46px;height:46px;object-fit:contain;border-radius:14px;background:var(--orange-50);border:1px solid var(--orange-200);padding:5px;" />
+            <div>
+              <p id="kicker" class="kicker">SUNBOT</p>
+              <h1 id="appTitle" class="app-title">Sunbot Growth Portal</h1>
+              <p id="userLine" class="user-line"></p>
+            </div>
+          </div>
+          <div class="top-actions">
+            <button id="backBtn" class="btn btn-white hidden" onclick="goBack()">Quay lại</button>
+            <button class="btn btn-soft" onclick="refreshData(true)">Cập nhật dữ liệu</button>
+            <button class="btn btn-muted" onclick="logout()">Đăng xuất</button>
+          </div>
+        </div>
+        <nav id="nav" class="nav"></nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <section id="screen-home" class="screen active"></section>
+      <section id="screen-users" class="screen"></section>
+      <section id="screen-library" class="screen"></section>
+      <section id="screen-pricebook" class="screen"></section>
+      <section id="screen-create" class="screen"></section>
+      <section id="screen-accounts" class="screen"></section>
+      <section id="screen-sent" class="screen"></section>
+      <section id="screen-activity" class="screen"></section>
+    </main>
+  </div>
+
+  <div id="previewModal" class="modal hidden">
+    <div class="modal-card modal-wide">
+      <div class="modal-head">
+        <div style="min-width:0;">
+          <div id="previewTitle" class="h3" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+          <div id="previewUrl" class="doc-meta" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <a id="previewOpen" class="btn btn-soft" target="_blank">Mở tab mới</a>
+          <button class="btn btn-muted" onclick="closePreview()">Đóng</button>
+        </div>
+      </div>
+      <div class="frame-wrap">
+        <iframe id="previewFrame"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <div id="sendModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="section-label">Ghi nhận lịch sử</div>
+      <h2 class="h2">Tôi đã gửi tài liệu này cho...</h2>
+      <p id="sendDocTitle" class="p"></p>
+      <input id="sendContentId" type="hidden" />
+
+      <div class="field">
+        <label class="label">Người/đơn vị nhận</label>
+        <select id="sendAccount" class="select"></select>
+      </div>
+      <div class="field">
+        <label class="label">Kênh gửi</label>
+        <select id="sendChannel" class="select">
+          <option>Zalo</option>
+          <option>Email</option>
+          <option>Gặp trực tiếp</option>
+          <option>Cuộc họp</option>
+          <option>Điện thoại</option>
+          <option>Khác</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="label">Khách phản hồi thế nào?</label>
+        <textarea id="sendResponse" class="textarea" rows="2"></textarea>
+      </div>
+      <div class="field">
+        <label class="label">Bước tiếp theo là gì?</label>
+        <input id="sendNext" class="input" />
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:18px;">
+        <button class="btn btn-white" onclick="closeSend()">Hủy</button>
+        <button class="btn btn-primary" onclick="submitSendLog()">Lưu lịch sử gửi</button>
+      </div>
+      <div id="sendMsg" class="msg"></div>
+    </div>
+  </div>
+
+<script>
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzphL0rBbZKdAlX2gpztzOo2OhO1sdjW2K6wDDIuZ12D2X0v33AVrmLGHif5yU8Jp6_/exec";
+const state = {
+  token: localStorage.getItem("sb_v5_token") || "",
+  user: JSON.parse(localStorage.getItem("sb_v5_user") || "null"),
+  permissions: JSON.parse(localStorage.getItem("sb_v5_permissions") || "{}"),
+  roleKind: "guest",
+  current: "home",
+  history: [],
+  loading: false,
+  dataLoaded: false,
+  userAdminLoaded: false,
+  userAdminError: "",
+  data: {
+    content: [],
+    accounts: [],
+    sentLogs: [],
+    users: [],
+    credentials: [],
+    dashboard: null,
+    releaseNotes: []
+  }
+};
+
+function byId(id) { return document.getElementById(id); }
+function esc(v) {
+  return String(v ?? "").replace(/[&<>"]/g, m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]));
+}
+function attr(v) { return esc(v).replace(/'/g,"&#39;"); }
+function setText(id, text) { const el = byId(id); if (el) el.textContent = text; }
+function setMsg(id, text, kind) {
+  const el = byId(id);
+  if (!el) return;
+  el.textContent = text || "";
+  el.className = "msg " + (kind || "");
+}
+
+async function api(payload) {
+  const res = await fetch(BACKEND_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  });
+  const text = await res.text();
+  try { return JSON.parse(text); }
+  catch(e) { throw new Error(text || "Không đọc được phản hồi hệ thống"); }
+}
+
+async function login() {
+  const username = byId("loginId").value.trim();
+  const password = byId("loginPin").value.trim();
+  if (!username || !password) {
+    setMsg("loginMsg", "Cần nhập Email/ID và Mã PIN.", "error");
+    return;
+  }
+
+  byId("loginBtn").disabled = true;
+  setMsg("loginMsg", "Đang đăng nhập...", "");
+
+  try {
+    const r = await api({ action:"login", username, password });
+    if (!r.success) throw new Error(r.message || "Không đăng nhập được");
+
+    state.token = r.token;
+    state.user = r.user;
+    state.permissions = r.permissions || {};
+    localStorage.setItem("sb_v5_token", state.token);
+    localStorage.setItem("sb_v5_user", JSON.stringify(state.user));
+    localStorage.setItem("sb_v5_permissions", JSON.stringify(state.permissions));
+
+    showApp();
+    await refreshData(true);
+  } catch(e) {
+    setMsg("loginMsg", e.message, "error");
+  } finally {
+    byId("loginBtn").disabled = false;
+  }
+}
+
+function logout() {
+  localStorage.removeItem("sb_v5_token");
+  localStorage.removeItem("sb_v5_user");
+  localStorage.removeItem("sb_v5_permissions");
+  location.reload();
+}
+
+function getRoleKind() {
+  const g = String(state.user?.PermissionGroupID || "").toUpperCase();
+  const r = String(state.user?.Role || "").toUpperCase();
+  if (g.includes("CEO") || r.includes("CEO") || r.includes("ADMIN")) return "admin";
+  if (g.includes("BOARD")) return "board";
+  if (g.includes("STAFF") || g.includes("SALES")) return "staff";
+  if (g.includes("CONTRACTOR") || g.includes("LAB") || g.includes("EXPERIENCE") || g.includes("FRANCHISE")) return "project";
+  if (g.includes("REFERRAL") || g.includes("INVESTOR") || g.includes("PARTNER")) return "referral";
+  return "referral";
+}
+
+function roleConfig() {
+  const kind = state.roleKind;
+  if (kind === "admin") return {
+    kicker:"BẢNG ĐIỀU HÀNH SUNBOT",
+    title:"Sunbot Growth OS",
+    intro:"Theo dõi tài khoản, tài liệu, khách/cơ hội và lịch sử gửi thông tin.",
+    tabs:[
+      ["home","Tổng quan"],
+      ["users","Tài khoản & phân quyền"],
+      ["library","Tài liệu Sunbot"],
+      ["pricebook","Bảng giá"],
+      ["create","Thêm khách/cơ hội"],
+      ["accounts","Khách hàng & cơ hội"],
+      ["sent","Lịch sử gửi"],
+      ["activity","Theo dõi hoạt động"]
+    ]
+  };
+  if (kind === "board") return {
+    kicker:"GÓC NHÌN CHIẾN LƯỢC",
+    title:"Sunbot Strategic View",
+    intro:"Xem nhanh hệ thống tài liệu, cơ hội và tình hình phân phối thông tin.",
+    tabs:[
+      ["home","Tổng quan"],
+      ["library","Tài liệu Sunbot"],
+      ["pricebook","Bảng giá"],
+      ["accounts","Cơ hội nổi bật"],
+      ["activity","Theo dõi hoạt động"]
+    ]
+  };
+  if (kind === "staff") return {
+    kicker:"KHÔNG GIAN LÀM VIỆC NỘI BỘ",
+    title:"Sunbot Work Portal",
+    intro:"Thêm khách/cơ hội, chọn tài liệu để gửi và ghi lại lịch sử chăm sóc.",
+    tabs:[
+      ["home","Việc của tôi"],
+      ["create","Thêm khách/cơ hội"],
+      ["library","Tài liệu được phép gửi"],
+      ["pricebook","Bảng giá"],
+      ["accounts","Khách tôi phụ trách"],
+      ["sent","Lịch sử tôi đã gửi"]
+    ]
+  };
+  if (kind === "project") return {
+    kicker:"THÔNG TIN HỢP TÁC DỰ ÁN",
+    title:"Sunbot Project Portal",
+    intro:"Xem tài liệu dự án được chia sẻ và gửi thông tin/câu hỏi cho Sunbot.",
+    tabs:[
+      ["home","Bắt đầu"],
+      ["library","Tài liệu dự án"],
+      ["pricebook","Bảng giá dự án"],
+      ["create","Gửi thông tin dự án"]
+    ]
+  };
+  return {
+    kicker:"KHÔNG GIAN GIỚI THIỆU CƠ HỘI",
+    title:"Sunbot Partner Link",
+    intro:"Tìm hiểu nhanh về Sunbot và giới thiệu các cơ hội phù hợp.",
+    tabs:[
+      ["home","Bắt đầu"],
+      ["library","Tìm hiểu Sunbot"],
+      ["create","Giới thiệu cơ hội"],
+      ["accounts","Cơ hội đã gửi"]
+    ]
+  };
+}
+
+function showApp() {
+  state.roleKind = getRoleKind();
+  const cfg = roleConfig();
+  byId("loginScreen").classList.add("hidden");
+  byId("app").classList.remove("hidden");
+  setText("kicker", cfg.kicker);
+  setText("appTitle", cfg.title);
+  setText("userLine", `${state.user?.FullName || state.user?.Username || ""} · ${cfg.intro}`);
+
+  renderNav(cfg.tabs);
+  goTo("home", true);
+}
+
+function renderNav(tabs) {
+  byId("nav").innerHTML = tabs.map(([id, label]) =>
+    `<button class="nav-btn" data-tab="${id}" onclick="goTo('${id}')">${esc(label)}</button>`
+  ).join("");
+}
+
+function goTo(screen, silent=false) {
+  if (!screen || state.current === screen) return;
+  if (!silent && state.current) state.history.push(state.current);
+  state.current = screen;
+
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  byId("screen-" + screen)?.classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === screen));
+  byId("backBtn").classList.toggle("hidden", state.history.length === 0);
+
+  renderCurrent();
+}
+
+function goBack() {
+  const last = state.history.pop();
+  if (last) goTo(last, true);
+  byId("backBtn").classList.toggle("hidden", state.history.length === 0);
+}
+
+async function refreshData(force=false) {
+  if (!state.token || state.loading) return;
+  state.loading = true;
+  try {
+    const r = await api({ action:"sync", token:state.token });
+    if (!r.success) throw new Error(r.message || "Không cập nhật được dữ liệu");
+
+    state.data.content = r.content || [];
+    state.data.accounts = r.accounts || [];
+    state.data.sentLogs = r.sentLogs || [];
+    state.data.dashboard = r.dashboard || null;
+    state.data.releaseNotes = r.releaseNotes || [];
+    state.dataLoaded = true;
+
+    renderCurrent();
+  } catch(e) {
+    alert("Lỗi cập nhật dữ liệu: " + e.message);
+  } finally {
+    state.loading = false;
+  }
+}
+
+async function loadUserAdmin(force=false) {
+  if ((state.userAdminLoaded && !force) || state.roleKind !== "admin") return;
+  state.userAdminError = "";
+  try {
+    const r = await api({ action:"get_user_admin_data", token:state.token });
+    if (!r.success) throw new Error(r.message || "Không tải được danh sách tài khoản");
+    state.data.users = r.users || [];
+    state.data.credentials = r.credentials || [];
+    state.userAdminLoaded = true;
+  } catch(e) {
+    state.userAdminError = e.message;
+    state.data.users = [];
+    state.data.credentials = [];
+    state.userAdminLoaded = false;
+    console.warn("Không tải được danh sách tài khoản:", e.message);
+  }
+}
+
+async function renderCurrent() {
+  if (state.current === "home") renderHome();
+  if (state.current === "library") renderLibrary();
+  if (state.current === "pricebook") renderPricebook();
+  if (state.current === "create") renderCreate();
+  if (state.current === "accounts") renderAccounts();
+  if (state.current === "sent") renderSent();
+  if (state.current === "activity") renderActivity();
+  if (state.current === "users") {
+    await loadUserAdmin();
+    renderUsers();
+  }
+}
+
+
+
+const PRICEBOOK_FALLBACK = {
+  updatedAt: "2026-05-18",
+  packages: [
+    { code:"SBR-CORE", nameVN:"Sunbot Robotics – Robot & Tư duy Công nghệ", nameEN:"Sunbot Robotics", role:"Gói lõi / gateway", year1:67100000, year2:27000000, year3:27000000, status:"Ready", note:"Chưa đưa Teacher Control Mode vào giá. Android Box cần chốt giá/model riêng." },
+    { code:"SBR-PLUS", nameVN:"Sunbot Robotics Plus – Robot STEAM & Công nghệ Tương tác", nameEN:"Sunbot Robotics Plus", role:"Gói chủ lực", year1:98600000, year2:49000000, year3:49000000, status:"Ready", note:"Robot + Project Light + Mission + đào tạo 2 phân hệ + QA." },
+    { code:"SBR-EXP", nameVN:"Sunbot Creative Technology – Công nghệ Sáng tạo", nameEN:"Sunbot Creative Technology", role:"Experience add-on", year1:43000000, year2:0, year3:0, status:"Add-on", note:"Không standalone; bán trên nền Core/Plus hoặc event/camp." },
+    { code:"SBR-PLUS+EXP", nameVN:"Robotics Plus + Creative Technology", nameEN:"Robotics Plus + Creative Technology", role:"Gói chủ lực nâng cao", year1:141600000, year2:49000000, year3:49000000, status:"Ready", note:"Dùng cho trường tư muốn wow/branding mạnh." },
+    { code:"SBR-LAB", nameVN:"Sunbot Future Lab – Không gian Công nghệ Tương lai", nameEN:"Sunbot Future Lab", role:"Capex / tender / experience space", year1:185000000, year2:0, year3:0, status:"Project", note:"Project pricing; cộng Core/Plus nếu cần vận hành lớp học." }
+  ],
+  displayOptions: [
+    { id:"D01", name:"Display Ready", device:"TV có sẵn", level:"Recommended", warranty:"School", support:"Basic compatibility support", for:"Robotics", note:"TV thường + Android Box" },
+    { id:"D02", name:"Smart Display Kit", device:"TV + Android Box", level:"Recommended", warranty:"Mixed", support:"Android Box support", for:"Robotics Plus", note:"Khuyến nghị triển khai chuẩn" },
+    { id:"D03", name:"Teacher Control Tablet", device:"Tablet giáo viên", level:"Roadmap / Optional", warranty:"School", support:"Setup support", for:"Robotics Plus", note:"Chưa tính vào giá hiện hành" },
+    { id:"D04", name:"Interactive Touch Display", device:"Màn hình cảm ứng", level:"Optional Premium", warranty:"Vendor", support:"Limited support", for:"Creative Technology", note:"Không bắt buộc" }
+  ]
+};
+
+function money(v) {
+  const n = Number(v || 0);
+  return n ? n.toLocaleString("vi-VN") + "đ" : "—";
+}
+function canSeePricebook() {
+  return ["admin","board","staff","project"].includes(state.roleKind) || state.permissions.CanViewPricebook;
+}
+function canSeeSensitivePrice() {
+  return state.roleKind === "admin" || state.permissions.CanViewMargin || state.permissions.CanViewCost;
+}
+function renderPricebook() {
+  const el = byId("screen-pricebook");
+  if (!canSeePricebook()) {
+    el.innerHTML = `<div class="card"><div class="empty">Tài khoản này chưa được cấp quyền xem bảng giá.</div></div>`;
+    return;
+  }
+  const rows = PRICEBOOK_FALLBACK.packages;
+  const devices = PRICEBOOK_FALLBACK.displayOptions;
+  const sensitiveNote = canSeeSensitivePrice()
+    ? "Tài khoản của chị có thể xem/kiểm soát logic giá ở cấp quản trị. Cost/margin vẫn cần đọc trong file master, không hiển thị mặc định cho sale."
+    : "Màn hình này chỉ hiển thị giá bán đề xuất. Không hiển thị giá vốn, margin hoặc giả định nội bộ.";
+
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Pricebook Phase 1</span>
+      <h2 class="h2">Bảng giá Sunbot 2026</h2>
+      <p class="p">Bản xem nhanh cho Growth OS. Nguồn chuẩn là file <b>SUNBOT_MASTER_PRICE_ARCHITECTURE_v6_GROWTH_OS_PHASE1_READY</b>. ${sensitiveNote}</p>
+      <div class="grid grid-4" style="margin-top:16px;">
+        ${stat("Gói đang quản lý", rows.length, "Package + add-on")}
+        ${stat("Gói chủ lực", "Robotics Plus", "Khuyến nghị bán chính")}
+        ${stat("Annual", "27–49m", "Duy trì hệ học tập")}
+        ${stat("Teacher Control", "Roadmap", "Chưa tính giá")}
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <span class="section-label">Package Summary</span>
+      <h2 class="h2">Cấu hình & giá đề xuất</h2>
+      <div class="table-wrap" style="margin-top:14px;">
+        <table>
+          <thead>
+            <tr><th>Mã</th><th>Cấu hình</th><th>Vai trò</th><th>Năm 1</th><th>Năm 2</th><th>Năm 3</th><th>Tổng 3 năm</th><th>Ghi chú</th></tr>
+          </thead>
+          <tbody>
+            ${rows.map(p => `
+              <tr>
+                <td><b>${esc(p.code)}</b><div class="doc-meta">${esc(p.status)}</div></td>
+                <td><b>${esc(p.nameVN)}</b><div class="doc-meta">${esc(p.nameEN)}</div></td>
+                <td>${esc(p.role)}</td>
+                <td><b>${money(p.year1)}</b></td>
+                <td>${money(p.year2)}</td>
+                <td>${money(p.year3)}</td>
+                <td><b>${money(Number(p.year1)+Number(p.year2)+Number(p.year3))}</b></td>
+                <td>${esc(p.note)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <span class="section-label">Display & Delivery Architecture</span>
+      <h2 class="h2">Màn hình, Android Box và thiết bị triển khai</h2>
+      <p class="p">Màn hình cảm ứng là option cao cấp. Cấu hình chuẩn vẫn nên giữ Android Box làm thiết bị chạy bài ổn định.</p>
+      <div class="table-wrap" style="margin-top:14px;">
+        <table>
+          <thead><tr><th>Mã</th><th>Cấu hình</th><th>Thiết bị</th><th>Mức áp dụng</th><th>Bảo hành</th><th>Sunbot hỗ trợ</th><th>Dùng cho</th><th>Ghi chú</th></tr></thead>
+          <tbody>${devices.map(d => `
+            <tr><td><b>${esc(d.id)}</b></td><td>${esc(d.name)}</td><td>${esc(d.device)}</td><td>${esc(d.level)}</td><td>${esc(d.warranty)}</td><td>${esc(d.support)}</td><td>${esc(d.for)}</td><td>${esc(d.note)}</td></tr>`).join("")}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:14px;">
+      <span class="section-label">Nguyên tắc bán hàng</span>
+      <h2 class="h2">Điều phải nhớ khi dùng bảng giá</h2>
+      <div class="grid grid-3" style="margin-top:14px;">
+        <div class="soft-card"><b>Robot = Core</b><p class="p">Không bán Sunbot như kit STEAM thủ công. Robot là lõi khó copy.</p></div>
+        <div class="soft-card"><b>Creative Project = Experience</b><p class="p">Project/kit là lớp tăng trải nghiệm, không phải gánh logistics bắt buộc.</p></div>
+        <div class="soft-card"><b>Audit = Lock-in</b><p class="p">Annual fee phải gắn với duy trì hệ học tập, QA, update mission và hỗ trợ vận hành.</p></div>
+      </div>
+    </div>`;
+}
+
+function renderHome() {
+  const el = byId("screen-home");
+  const name = esc(state.user?.FullName || state.user?.Username || "");
+  const admin = state.roleKind === "admin";
+
+  if (admin) {
+    el.innerHTML = `
+      <div class="card">
+        <span class="section-label">Bảng điều hành nhanh</span>
+        <h2 class="h2">Chào chị, bắt đầu từ 3 việc quan trọng</h2>
+        <p class="p">Hệ thống đã gom tài khoản, tài liệu, khách/cơ hội và lịch sử gửi vào một nơi để kiểm soát phân phối thông tin Sunbot.</p>
+        <div class="grid grid-4" style="margin-top:16px;">
+          ${stat("Tài liệu Sunbot", state.data.content.length, "Đang phân phối theo quyền")}
+          ${stat("Khách/cơ hội", state.data.accounts.length, "Đã ghi nhận")}
+          ${stat("Lượt gửi tài liệu", state.data.sentLogs.length, "Có lịch sử")}
+          ${stat("Tài khoản", state.data.users.length || "-", "Tải khi vào mục tài khoản")}
+        </div>
+      </div>
+      <div class="grid grid-3" style="margin-top:14px;">
+        ${quick("Cấp tài khoản cho người mới","Tạo Email/ID, Mã PIN, gán vai trò và copy tin nhắn gửi ngay.","users")}
+        ${quick("Xem bộ tài liệu đang dùng","Tài liệu được gom theo bộ: giới thiệu, trường học, đối tác, dự án, demo, báo giá.","library")}
+        ${quick("Theo dõi khách/cơ hội","Xem các cơ hội được staff, người giới thiệu hoặc đối tác gửi về.","accounts")}
+      </div>
+    `;
+    return;
+  }
+
+  if (state.roleKind === "staff") {
+    el.innerHTML = `
+      <div class="card">
+        <span class="section-label">Việc của tôi</span>
+        <h2 class="h2">Chào ${name}, hôm nay cần làm gì?</h2>
+        <p class="p">Làm theo 3 bước: thêm khách/cơ hội, chọn tài liệu phù hợp, ghi lại lịch sử gửi.</p>
+        <div class="grid grid-3" style="margin-top:16px;">
+          ${quick("Thêm khách/cơ hội mới","Ghi nhận trường, đối tác hoặc người cần chăm sóc.","create")}
+          ${quick("Chọn tài liệu để gửi","Mở các tài liệu Sunbot đã được duyệt.","library")}
+          ${quick("Xem khách tôi phụ trách","Theo dõi tình trạng và bước tiếp theo.","accounts")}
+        </div>
+      </div>`;
+    return;
+  }
+
+  if (state.roleKind === "project") {
+    el.innerHTML = `
+      <div class="card">
+        <span class="section-label">Dự án Sunbot</span>
+        <h2 class="h2">Thông tin hợp tác dự án</h2>
+        <p class="p">Anh/chị có thể xem tài liệu dự án được chia sẻ và gửi lại thông tin để Sunbot phối hợp tiếp.</p>
+        <div class="grid grid-3" style="margin-top:16px;">
+          ${quick("Xem tài liệu dự án","Mở các đề án/khu trải nghiệm/phòng lab được chia sẻ.","library")}
+          ${quick("Gửi thông tin dự án","Cho Sunbot biết bối cảnh dự án đang quan tâm.","create")}
+          ${quick("Mở bản đầy đủ","Dùng nút mở tab mới trong từng tài liệu.","library")}
+        </div>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Giới thiệu cơ hội</span>
+      <h2 class="h2">Cảm ơn anh/chị đã đồng hành giới thiệu Sunbot</h2>
+      <p class="p">Anh/chị chỉ cần hiểu đúng Sunbot và gửi lại cơ hội phù hợp. Đội Sunbot sẽ tiếp nhận và theo dõi tiếp.</p>
+      <div class="grid grid-3" style="margin-top:16px;">
+        ${quick("Xem Sunbot trong 3 phút","Bắt đầu bằng bộ giới thiệu nhanh và demo bài học.","library")}
+        ${quick("Giới thiệu một cơ hội","Nhập thông tin trường/đối tác/người liên hệ phù hợp.","create")}
+        ${quick("Xem cơ hội đã gửi","Theo dõi các cơ hội đã được ghi nhận.","accounts")}
+      </div>
+    </div>`;
+}
+
+function stat(label, value, note) {
+  return `<div class="stat"><p class="stat-label">${label}</p><div class="stat-val">${value}</div><p class="stat-note">${note}</p></div>`;
+}
+
+function quick(title, desc, target) {
+  return `<button class="quick-action" onclick="goTo('${target}')"><h3>${title}</h3><p>${desc}</p></button>`;
+}
+
+function docPacks() {
+  return [
+    { id:"intro", title:"Bộ giới thiệu nhanh", desc:"Dùng khi người nhận chưa biết Sunbot là gì.", guide:"Nên bắt đầu bằng E-profile hoặc Cổng thông tin Sunbot." },
+    { id:"school", title:"Bộ dành cho trường học", desc:"Dùng khi làm việc với hiệu trưởng, chủ trường, quản lý chuyên môn.", guide:"Tập trung vào giá trị giáo dục và trải nghiệm lớp học." },
+    { id:"partner", title:"Bộ dành cho người giới thiệu/đối tác", desc:"Dùng cho người có quan hệ, cộng tác viên hoặc đối tác bán hàng.", guide:"Không gửi báo giá nội bộ khi chưa được duyệt quyền." },
+    { id:"project", title:"Bộ dành cho nhà thầu/khu trải nghiệm", desc:"Dùng cho phòng lab, khu trải nghiệm, thư viện, dự án giáo dục công nghệ.", guide:"Phù hợp khi đối tác hỏi về cấu phần dự án." },
+    { id:"demo", title:"Bộ demo bài học", desc:"Dùng để khách xem sản phẩm thật thay vì chỉ đọc proposal.", guide:"Nên mở trực tiếp khi gọi tư vấn hoặc demo online." },
+    { id:"quote", title:"Bộ báo giá nội bộ", desc:"Chỉ dành cho người có quyền xem báo giá hoặc nhân sự phụ trách bán hàng.", guide:"Khi gửi cần ghi lại lịch sử gửi." }
+  ];
+}
+
+function contentPack(c) {
+  const id = String(c.ContentID || "").toLowerCase();
+  const title = String(c.Title || "").toLowerCase();
+  const t = String(c.ContentType || "").toLowerCase();
+  const p = String(c.PortalType || "").toLowerCase();
+  const tags = String(c.Tags || "").toLowerCase();
+  const offer = String(c.OfferID || "").toLowerCase();
+  const category = String(c.Category || "").toLowerCase();
+
+  const all = [id, title, t, p, tags, offer, category].join(" ");
+
+  if (all.includes("demo")) return "demo";
+  if (all.includes("quote") || all.includes("báo giá") || all.includes("bảng giá")) return "quote";
+
+  if (
+    all.includes("franchise") ||
+    all.includes("nhượng quyền") ||
+    all.includes("chuyển giao")
+  ) return "partner";
+
+  if (
+    all.includes("lab") ||
+    all.includes("bid") ||
+    all.includes("project") ||
+    all.includes("contractor") ||
+    all.includes("experience") ||
+    all.includes("playgrow") ||
+    all.includes("khu trải nghiệm") ||
+    all.includes("phòng lab") ||
+    all.includes("nhà thầu")
+  ) return "project";
+
+  if (
+    all.includes("camp") ||
+    all.includes("chủ đề") ||
+    all.includes("material") ||
+    all.includes("học cụ") ||
+    all.includes("học liệu")
+  ) return "school";
+
+  if (
+    all.includes("school") ||
+    all.includes("trường")
+  ) return "school";
+
+  if (
+    all.includes("partner") ||
+    all.includes("đối tác") ||
+    all.includes("referral") ||
+    all.includes("giới thiệu")
+  ) return "partner";
+
+  return "intro";
+}
+
+function renderLibrary() {
+  const el = byId("screen-library");
+  const packs = docPacks();
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Thư viện theo bộ tài liệu</span>
+      <h2 class="h2">${state.roleKind === "project" ? "Tài liệu dự án" : state.roleKind === "referral" ? "Tìm hiểu Sunbot" : "Tài liệu Sunbot"}</h2>
+      <p class="p">Tài liệu được gom theo mục đích sử dụng để dễ chọn đúng tài liệu, đúng người nhận, đúng bối cảnh.</p>
+      <div class="toolbar" style="margin-top:16px;">
+        <input id="librarySearch" class="input" placeholder="Tìm theo tên tài liệu..." oninput="filterLibrary()" />
+        <select id="libraryPack" class="select" onchange="filterLibrary()">
+          <option value="">Tất cả bộ tài liệu</option>
+          ${packs.map(p => `<option value="${p.id}">${p.title}</option>`).join("")}
+        </select>
+      </div>
+      <div id="libraryBody" style="margin-top:16px;"></div>
+    </div>
+  `;
+  filterLibrary();
+}
+
+function filterLibrary() {
+  const q = (byId("librarySearch")?.value || "").toLowerCase().trim();
+  const selected = byId("libraryPack")?.value || "";
+  const body = byId("libraryBody");
+  if (!body) return;
+
+  let packs = docPacks()
+    .filter(p => !selected || p.id === selected)
+    .map(p => {
+      const docs = state.data.content
+        .filter(c => contentPack(c) === p.id)
+        .filter(c => !q || Object.values(c).join(" ").toLowerCase().includes(q));
+      return { ...p, docs };
+    });
+
+  // Khi đang xem "Tất cả bộ tài liệu", chỉ hiện các bộ có tài liệu.
+  // Việc này tránh giao diện có nhiều khối trống khi tài khoản chỉ được cấp một số tài liệu.
+  if (!selected) {
+    packs = packs.filter(p => p.docs.length > 0);
+  }
+
+  if (!packs.length) {
+    body.innerHTML = `<div class="empty">Tài khoản hiện tại chưa có tài liệu phù hợp hoặc chưa được cấp quyền xem nhóm tài liệu này.</div>`;
+    return;
+  }
+
+  body.innerHTML = packs.map(renderPack).join("");
+}
+
+function renderPack(pack) {
+  return `
+    <div class="pack">
+      <div class="soft-card">
+        <div class="pack-head">
+          <div>
+            <span class="pill">${pack.docs.length} tài liệu</span>
+            <h3 class="h3" style="margin-top:10px;">${pack.title}</h3>
+            <p class="p">${pack.desc}</p>
+            <p class="doc-meta"><b>Gợi ý dùng:</b> ${pack.guide}</p>
+          </div>
+        </div>
+        <div class="grid grid-2">
+          ${pack.docs.length ? pack.docs.map(renderDoc).join("") : `<div class="empty">Chưa có tài liệu trong bộ này hoặc tài khoản hiện tại chưa có quyền xem.</div>`}
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderDoc(c) {
+  const canSend = (state.roleKind === "admin" || state.roleKind === "staff") && state.permissions.CanViewCRM;
+  return `
+    <div class="doc-card">
+      <span class="pill">${esc(c.ContentType || "Tài liệu")}</span>
+      <h4 class="doc-title">${esc(c.Title || "")}</h4>
+      <p class="doc-desc">${esc(c.Description || "")}</p>
+      <div class="doc-meta">
+        <div><b>Dùng cho:</b> ${esc(c.Audience || "")}</div>
+        ${state.roleKind === "admin" ? `<div><b>Lượt xem/gửi:</b> ${esc(c.ViewCount || 0)} / ${esc(c.SendCount || 0)}</div>` : ""}
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-primary" onclick='previewDoc(${JSON.stringify(c)})'>Xem tài liệu</button>
+        ${canSend ? `<button class="btn btn-soft" onclick='openSend(${JSON.stringify(c)})'>Tôi đã gửi tài liệu này</button>` : ""}
+        <a class="btn btn-white" target="_blank" href="${attr(c.MainLink || "#")}">Mở tab mới</a>
+      </div>
+    </div>`;
+}
+
+function renderCreate() {
+  const el = byId("screen-create");
+  const isProject = state.roleKind === "project";
+  const isReferral = state.roleKind === "referral";
+  const title = isProject ? "Gửi thông tin dự án đang quan tâm" : isReferral ? "Giới thiệu một cơ hội cho Sunbot" : "Thêm khách/cơ hội mới";
+  const desc = isProject ? "Cho Sunbot biết bối cảnh dự án để phối hợp phù hợp." : isReferral ? "Anh/chị chỉ cần nhập thông tin cơ bản. Đội Sunbot sẽ tiếp nhận và theo dõi tiếp." : "Ghi nhận khách hàng, đối tác hoặc cơ hội cần chăm sóc.";
+
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">${isProject ? "Thông tin dự án" : isReferral ? "Cơ hội giới thiệu" : "Khách/cơ hội"}</span>
+      <h2 class="h2">${title}</h2>
+      <p class="p">${desc}</p>
+
+      <div class="grid grid-2" style="margin-top:16px;">
+        <div class="field"><label class="label">${isReferral ? "Tên đơn vị/người cần giới thiệu" : isProject ? "Tên dự án/đơn vị" : "Tên trường/đơn vị"}</label><input id="accName" class="input" /></div>
+        <div class="field"><label class="label">Loại</label><select id="accType" class="select">${typeOptions()}</select></div>
+        <div class="field"><label class="label">Khu vực/địa phương</label><input id="accRegion" class="input" /></div>
+        <div class="field"><label class="label">Mức tiềm năng</label><select id="accPotential" class="select"><option>B</option><option>A</option><option>C</option></select></div>
+      </div>
+
+      <div class="field"><label class="label">${isProject ? "Nhu cầu/câu hỏi cần Sunbot hỗ trợ" : isReferral ? "Vì sao cơ hội này phù hợp?" : "Ghi chú nhu cầu"}</label><textarea id="accNotes" class="textarea" rows="4"></textarea></div>
+      <button class="btn btn-primary" style="margin-top:16px;" onclick="createAccount()">${isProject ? "Gửi thông tin dự án" : isReferral ? "Gửi cơ hội giới thiệu" : "Tạo khách/cơ hội"}</button>
+      <div id="createMsg" class="msg"></div>
+    </div>`;
+}
+
+function typeOptions() {
+  if (state.roleKind === "project") return `<option>Khu trải nghiệm</option><option>Phòng lab</option><option>Thư viện</option><option>Trường học</option><option>Nhà thầu</option><option>Khác</option>`;
+  if (state.roleKind === "referral") return `<option>Trường tư</option><option>Trường công</option><option>Trung tâm</option><option>Đối tác tiềm năng</option><option>Người cần kết nối</option><option>Khác</option>`;
+  return `<option>Trường tư</option><option>Trường công</option><option>Trung tâm</option><option>Đối tác tỉnh</option><option>CTV</option><option>Nhà thầu</option><option>Thư viện</option><option>Khác</option>`;
+}
+
+async function createAccount() {
+  const account = {
+    AccountName: byId("accName").value.trim(),
+    AccountType: byId("accType").value,
+    Region: byId("accRegion").value.trim(),
+    LeadSource: state.roleKind === "referral" ? `Giới thiệu bởi ${state.user.FullName || state.user.Username}` : state.roleKind === "project" ? "Nhà thầu/dự án" : "Nội bộ",
+    PotentialLevel: byId("accPotential").value,
+    Stage: state.roleKind === "project" ? "Đã hỏi thông tin" : "Lead mới",
+    Status: "Active",
+    Notes: byId("accNotes").value.trim()
+  };
+
+  if (!account.AccountName) {
+    setMsg("createMsg", "Cần nhập tên đơn vị/người cần giới thiệu.", "error");
+    return;
+  }
+
+  setMsg("createMsg", "Đang ghi nhận...", "");
+  try {
+    const r = await api({ action:"create_account", token:state.token, account });
+    if (!r.success) throw new Error(r.message);
+    state.data.accounts.push(r.account);
+    setMsg("createMsg", "Đã ghi nhận: " + r.account.AccountID, "ok");
+    byId("accName").value = ""; byId("accRegion").value = ""; byId("accNotes").value = "";
+  } catch(e) {
+    setMsg("createMsg", e.message, "error");
+  }
+}
+
+function renderAccounts() {
+  const el = byId("screen-accounts");
+  if (!state.permissions.CanViewCRM && state.roleKind !== "board") {
+    el.innerHTML = `<div class="card"><div class="empty">Tài khoản này chỉ gửi cơ hội. Đội Sunbot sẽ tiếp nhận và theo dõi nội bộ.</div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Khách hàng & cơ hội</span>
+      <h2 class="h2">${state.roleKind === "staff" ? "Khách tôi phụ trách" : "Danh sách khách/cơ hội"}</h2>
+      <p class="p">Theo dõi các cơ hội đã được ghi nhận trong hệ thống.</p>
+      <div style="margin-top:16px;" class="grid grid-2">
+        ${state.data.accounts.length ? state.data.accounts.map(renderAccount).join("") : `<div class="empty">Chưa có khách/cơ hội.</div>`}
+      </div>
+    </div>`;
+}
+
+function renderAccount(a) {
+  return `
+    <div class="doc-card">
+      <div style="display:flex; justify-content:space-between; gap:12px;">
+        <div>
+          <h3 class="h3">${esc(a.AccountName || "")}</h3>
+          <div class="doc-meta">${esc(a.AccountID || "")}</div>
+        </div>
+        <span class="pill">${esc(a.Stage || "")}</span>
+      </div>
+      <div class="doc-meta" style="margin-top:12px;">
+        <div><b>Loại:</b> ${esc(a.AccountType || "")}</div>
+        <div><b>Khu vực:</b> ${esc(a.Region || "")}</div>
+        <div><b>Nguồn:</b> ${esc(a.LeadSource || "")}</div>
+      </div>
+      <p class="doc-desc">${esc(a.Notes || "")}</p>
+    </div>`;
+}
+
+function renderSent() {
+  const el = byId("screen-sent");
+  if (!state.permissions.CanViewCRM) {
+    el.innerHTML = `<div class="card"><div class="empty">Tài khoản này không có mục lịch sử gửi tài liệu.</div></div>`;
+    return;
+  }
+
+  const accountMap = Object.fromEntries(state.data.accounts.map(a => [a.AccountID, a.AccountName]));
+  const contentMap = Object.fromEntries(state.data.content.map(c => [c.ContentID, c.Title]));
+
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Lịch sử gửi</span>
+      <h2 class="h2">Các tài liệu đã gửi</h2>
+      <p class="p">Mỗi lần gửi tài liệu cho khách/đối tác cần được ghi nhận để theo dõi hành trình.</p>
+      <div style="margin-top:16px;">
+        ${state.data.sentLogs.length ? state.data.sentLogs.slice().reverse().map(l => `
+          <div class="doc-card" style="margin-bottom:10px;">
+            <h3 class="h3">${esc(contentMap[l.ContentID] || l.ContentID || "")}</h3>
+            <p class="doc-desc">Gửi cho: <b>${esc(accountMap[l.ReceiverAccountID] || l.ReceiverAccountID || "")}</b> · ${esc(l.Channel || "")}</p>
+            <div class="doc-meta">${esc(l.SentAt || "")} · ${esc(l.SentID || "")}</div>
+          </div>
+        `).join("") : `<div class="empty">Chưa có lịch sử gửi tài liệu.</div>`}
+      </div>
+    </div>`;
+}
+
+function renderActivity() {
+  const el = byId("screen-activity");
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Theo dõi hoạt động</span>
+      <h2 class="h2">Tổng quan hoạt động</h2>
+      <p class="p">Bản v5 ưu tiên tốc độ và giao diện dễ dùng. Số liệu chi tiết có thể xem trong Google Sheet ACCESS_LOG, CONTENT_SENT_LOG và USER_ACTIVITY.</p>
+      <div class="grid grid-3" style="margin-top:16px;">
+        ${stat("Tài liệu", state.data.content.length, "Đang hiển thị")}
+        ${stat("Khách/cơ hội", state.data.accounts.length, "Đã ghi nhận")}
+        ${stat("Lịch sử gửi", state.data.sentLogs.length, "Đã lưu")}
+      </div>
+    </div>`;
+}
+
+function renderUsers() {
+  const el = byId("screen-users");
+  if (state.roleKind !== "admin") {
+    el.innerHTML = `<div class="card"><div class="empty">Chỉ admin/CEO được quản lý tài khoản.</div></div>`;
+    return;
+  }
+
+  const rows = state.data.users || [];
+  const credMap = Object.fromEntries((state.data.credentials || []).map(c => [String(c.UserID), c]));
+
+  el.innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <span class="section-label">Tạo tài khoản</span>
+        <h2 class="h2">Cấp Email/ID và Mã PIN</h2>
+        <p class="p">Dùng khi cần cấp tài khoản nhanh ngay trên app. Chỉ cần nhập Họ tên, Email/ID, Mã PIN và chọn vai trò phù hợp.</p>
+
+        <div class="field"><label class="label">Họ tên</label><input id="newFullName" class="input"></div>
+        <div class="field"><label class="label">Email/ID đăng nhập</label><input id="newUsername" class="input"></div>
+        <div class="field"><label class="label">Mã PIN</label><input id="newPassword" class="input"></div>
+        <div class="field"><label class="label">Vai trò</label><select id="newPermission" class="select" onchange="fillRoleDefaults()">
+          <option value="STAFF_INTERNAL">Staff nội bộ</option>
+          <option value="SALES_INTERNAL">Sale nội bộ</option>
+          <option value="REFERRAL_PARTNER">Người giới thiệu</option>
+          <option value="PARTNER_BASIC">Đối tác cơ bản</option>
+          <option value="PARTNER_SALES_VERIFIED">Đối tác bán hàng xác minh</option>
+          <option value="CONTRACTOR_EXPERIENCE">Nhà thầu khu trải nghiệm</option>
+          <option value="CONTRACTOR_LAB">Nhà thầu phòng lab</option>
+          <option value="FRANCHISE_CANDIDATE">Đối tác nhượng quyền</option>
+          <option value="INVESTOR_REFERRAL">Nhà đầu tư/referral</option>
+          <option value="BOARD_STRATEGIC">Chủ tịch/cố vấn</option>
+          <option value="CEO_FULL">CEO/Admin</option>
+        </select></div>
+        <div class="field"><label class="label">Team/kênh</label><input id="newTeam" class="input"></div>
+        <div class="field"><label class="label">Ghi chú</label><textarea id="newNotes" class="textarea" rows="2"></textarea></div>
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="createUser()">Tạo tài khoản</button>
+        <div id="userMsg" class="msg"></div>
+        <div class="soft-card" style="margin-top:16px;">
+          <b>Gợi ý nhanh:</b>
+          <div class="doc-meta">Staff nội bộ: Thu/Nhung/Dung. Người giới thiệu: người có quan hệ nhưng không vận hành. Nhà thầu: chỉ xem tài liệu dự án. Board/Investor: xem chiến lược, không thao tác vận hành sâu.</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="section-label">Danh sách tài khoản</span>
+        <h2 class="h2">Danh sách tài khoản</h2>
+        <p class="p">Danh sách các tài khoản đang được cấp quyền sử dụng Sunbot Growth Portal. Chị có thể xem Email/ID, Mã PIN, vai trò, copy tin nhắn Zalo/email để gửi tài khoản hoặc khóa/mở khi cần.</p>
+        <div style="margin-top:12px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="btn btn-soft" onclick="reloadUsersFromButton()">Tải lại danh sách tài khoản</button>
+        </div>
+        <div id="userAdminErrorBox"></div>
+        <div class="table-wrap" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Người dùng</th><th>Email/ID</th><th>Mã PIN</th><th>Vai trò</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+            <tbody>
+              ${rows.length ? rows.map(u => renderUserRow(u, credMap[String(u.UserID)] || {})).join("") : `<tr><td colspan="6" style="text-align:center;color:var(--slate-500);">Chưa tải được danh sách tài khoản. Chị kiểm tra lại backend đã có quyền quản lý tài khoản và đã deploy bản mới chưa.</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+  const errBox = byId("userAdminErrorBox");
+  if (errBox && state.userAdminError) {
+    errBox.innerHTML = `<div class="notice" style="border-color:#fecaca;background:#fef2f2;color:#b91c1c;">Không tải được danh sách tài khoản: ${esc(state.userAdminError)}<br>Chị kiểm tra backend đã có action get_user_admin_data, tài khoản admin có CanManageUsers = TRUE và đã deploy New version.</div>`;
+  }
+  fillRoleDefaults();
+}
+
+async function reloadUsersFromButton() {
+  state.userAdminLoaded = false;
+  await loadUserAdmin(true);
+  renderUsers();
+}
+
+function fillRoleDefaults() {
+  const el = byId("newPermission");
+  if (!el) return;
+  const map = {
+    STAFF_INTERNAL:"Sunbot Internal",
+    SALES_INTERNAL:"Sales Team",
+    REFERRAL_PARTNER:"Referral Network",
+    PARTNER_BASIC:"Partner Network",
+    PARTNER_SALES_VERIFIED:"Partner Network",
+    CONTRACTOR_EXPERIENCE:"Contractor Network",
+    CONTRACTOR_LAB:"Contractor Network",
+    FRANCHISE_CANDIDATE:"Franchise Network",
+    INVESTOR_REFERRAL:"VSV/Investor",
+    BOARD_STRATEGIC:"Board",
+    CEO_FULL:"HQ"
+  };
+  byId("newTeam").value = map[el.value] || "";
+}
+
+function renderUserRow(u, c) {
+  const status = String(u.Status || "");
+  const pin = c.TemporaryPassword || c["Mã PIN"] || c.Pin || "";
+  const chatMsg = makeAccountMessage(u, pin);
+  const emailMsg = makeAccountEmail(u, pin);
+  const pText = permissionText(u.PermissionGroupID);
+  return `
+    <tr>
+      <td><b>${esc(u.FullName || "")}</b><div class="doc-meta">${esc(u.UserID || "")}</div></td>
+      <td><b>${esc(u.Username || "")}</b></td>
+      <td><span class="pill">${esc(pin || "Chưa có")}</span></td>
+      <td><b>${esc(u.PermissionGroupID || "")}</b><div class="doc-meta">${esc(pText)}</div></td>
+      <td><span class="status ${status === "Active" ? "active" : "locked"}">${esc(status)}</span></td>
+      <td>
+        <button class="btn btn-soft" onclick='copyText(${JSON.stringify(chatMsg)})'>Copy Zalo</button>
+        <button class="btn btn-white" onclick='copyText(${JSON.stringify(emailMsg)})'>Copy email</button>
+        <button class="btn btn-white" onclick="updateUserStatus('${attr(u.UserID)}','${status === "Active" ? "Locked" : "Active"}')">${status === "Active" ? "Khóa" : "Mở"}</button>
+      </td>
+    </tr>`;
+}
+
+function permissionText(id) {
+  const map = {
+    CEO_FULL:"Toàn quyền quản trị.",
+    BOARD_STRATEGIC:"Xem chiến lược, tài liệu, cơ hội tổng quan.",
+    INVESTOR_REFERRAL:"Xem thông tin chọn lọc, giới thiệu cơ hội.",
+    STAFF_INTERNAL:"Staff nội bộ: xem CRM, tạo cơ hội, gửi tài liệu.",
+    SALES_INTERNAL:"Sale nội bộ: xem CRM, báo giá, tạo cơ hội.",
+    SALES_STANDARD:"Sale tiêu chuẩn: xem CRM, báo giá, tạo cơ hội.",
+    REFERRAL_PARTNER:"Người giới thiệu: xem public, gửi cơ hội.",
+    PARTNER_BASIC:"Đối tác cơ bản: xem public, gửi cơ hội.",
+    PARTNER_SALES_VERIFIED:"Đối tác xác minh: xem proposal bán hàng.",
+    CONTRACTOR_EXPERIENCE:"Nhà thầu khu trải nghiệm.",
+    CONTRACTOR_LAB:"Nhà thầu phòng lab.",
+    FRANCHISE_CANDIDATE:"Đối tác nhượng quyền đang thẩm định.",
+    FRANCHISE_ADVANCED:"Đối tác nhượng quyền nâng cao."
+  };
+  return map[id] || "Nhóm quyền chưa có mô tả.";
+}
+
+function makeAccountMessage(u, pin) {
+  return `Em gửi anh/chị tài khoản truy cập Sunbot Growth Portal.\n\nLink hệ thống: [dán link Sunbot Growth Portal]\n\nEmail/ID đăng nhập: ${u.Username || ""}\nMã PIN: ${pin || ""}\n\nTài khoản này dùng riêng để xem thông tin Sunbot được phân quyền và ghi nhận đúng hoạt động hỗ trợ/giới thiệu. Vui lòng không chia sẻ tài khoản này cho người khác.`;
+}
+
+function makeAccountEmail(u, pin) {
+  return `Tiêu đề: Tài khoản truy cập Sunbot Growth Portal\n\nKính gửi anh/chị ${u.FullName || ""},\n\nSunbot gửi anh/chị thông tin truy cập Sunbot Growth Portal như sau:\n\nLink hệ thống: [dán link Sunbot Growth Portal]\nEmail/ID đăng nhập: ${u.Username || ""}\nMã PIN: ${pin || ""}\n\nTài khoản này được phân quyền riêng theo vai trò làm việc/hợp tác với Sunbot. Vui lòng không chia sẻ tài khoản cho người khác để hệ thống ghi nhận đúng hoạt động của từng người dùng.\n\nTrân trọng,\nSunbot`;
+}
+
+async function createUser() {
+  const permission = byId("newPermission").value;
+  const roleMap = {
+    STAFF_INTERNAL:"Staff_Internal",
+    SALES_INTERNAL:"Sales_Internal",
+    REFERRAL_PARTNER:"Referral_Partner",
+    CONTRACTOR_EXPERIENCE:"Contractor",
+    CONTRACTOR_LAB:"Contractor",
+    INVESTOR_REFERRAL:"Investor",
+    BOARD_STRATEGIC:"Board",
+    CEO_FULL:"CEO"
+  };
+  const user = {
+    FullName: byId("newFullName").value.trim(),
+    Username: byId("newUsername").value.trim(),
+    password: byId("newPassword").value.trim(),
+    Role: roleMap[permission] || "Partner",
+    PermissionGroupID: permission,
+    Team: byId("newTeam").value.trim(),
+    UserType: "User",
+    Notes: byId("newNotes").value.trim(),
+    Status: "Active"
+  };
+  if (!user.FullName || !user.Username || !user.password) {
+    setMsg("userMsg", "Cần nhập đủ Họ tên, Email/ID và Mã PIN.", "error");
+    return;
+  }
+  setMsg("userMsg", "Đang tạo tài khoản...", "");
+  try {
+    const r = await api({ action:"create_user_managed", token:state.token, user });
+    if (!r.success) throw new Error(r.message);
+    setMsg("userMsg", "Đã tạo tài khoản: " + r.user.Username, "ok");
+    state.userAdminLoaded = false;
+    await loadUserAdmin();
+    renderUsers();
+  } catch(e) {
+    setMsg("userMsg", e.message, "error");
+  }
+}
+
+async function updateUserStatus(userId, status) {
+  try {
+    const r = await api({ action:"update_user_status", token:state.token, UserID:userId, Status:status });
+    if (!r.success) throw new Error(r.message);
+    const u = state.data.users.find(x => String(x.UserID) === String(userId));
+    if (u) u.Status = status;
+    renderUsers();
+  } catch(e) {
+    alert("Không cập nhật được trạng thái: " + e.message);
+  }
+}
+
+function openSend(c) {
+  byId("sendContentId").value = c.ContentID || "";
+  setText("sendDocTitle", c.Title || "");
+  byId("sendResponse").value = "";
+  byId("sendNext").value = "";
+  setMsg("sendMsg", "", "");
+
+  const sel = byId("sendAccount");
+  if (!state.data.accounts.length) {
+    sel.innerHTML = `<option value="">Chưa có khách/cơ hội. Hãy tạo trước.</option>`;
+  } else {
+    sel.innerHTML = state.data.accounts.map(a => `<option value="${attr(a.AccountID)}">${esc(a.AccountName)} · ${esc(a.AccountID)}</option>`).join("");
+  }
+  byId("sendModal").classList.remove("hidden");
+}
+
+function closeSend() { byId("sendModal").classList.add("hidden"); }
+
+async function submitSendLog() {
+  const receiver = byId("sendAccount").value;
+  if (!receiver) {
+    setMsg("sendMsg", "Cần chọn người/đơn vị nhận. Nếu danh sách trống, hãy tạo khách/cơ hội trước.", "error");
+    return;
+  }
+  const sent = {
+    ReceiverAccountID: receiver,
+    ContentID: byId("sendContentId").value,
+    Channel: byId("sendChannel").value,
+    Response: byId("sendResponse").value.trim(),
+    NextStep: byId("sendNext").value.trim()
+  };
+  setMsg("sendMsg", "Đang lưu...", "");
+  try {
+    const r = await api({ action:"log_content_sent", token:state.token, sent });
+    if (!r.success) throw new Error(r.message);
+    state.data.sentLogs.push(r.sent);
+    const item = state.data.content.find(x => String(x.ContentID) === String(sent.ContentID));
+    if (item) item.SendCount = Number(item.SendCount || 0) + 1;
+    setMsg("sendMsg", "Đã ghi nhận: " + r.sent.SentID, "ok");
+    setTimeout(closeSend, 600);
+  } catch(e) {
+    setMsg("sendMsg", e.message, "error");
+  }
+}
+
+function previewDoc(c) {
+  setText("previewTitle", c.Title || "");
+  setText("previewUrl", c.MainLink || "");
+  byId("previewOpen").href = c.MainLink || "#";
+  byId("previewFrame").src = c.MainLink || "about:blank";
+  byId("previewModal").classList.remove("hidden");
+
+  const item = state.data.content.find(x => String(x.ContentID) === String(c.ContentID));
+  if (item) item.ViewCount = Number(item.ViewCount || 0) + 1;
+
+  api({ action:"log_access", token:state.token, ContentID:c.ContentID, ActionType:"Preview", device:navigator.platform, browser:navigator.userAgent })
+    .catch(e => console.warn("Không ghi được lượt xem:", e.message));
+}
+
+function closePreview() {
+  byId("previewFrame").src = "about:blank";
+  byId("previewModal").classList.add("hidden");
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    alert("Đã copy nội dung.");
+  } catch(e) {
+    prompt("Copy nội dung này:", text);
+  }
+}
+
+// v5.1: tối ưu phân loại tài liệu và ẩn các bộ tài liệu trống trong thư viện.
+if (state.token && state.user) {
+  showApp();
+  refreshData(true);
+}
+</script>
+</body>
+</html>
