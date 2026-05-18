@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sunbot Growth Portal v5.1</title>
+  <title>Sunbot Growth Portal v5.6 Quote PDF Clean</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -435,6 +435,7 @@
       <section id="screen-accounts" class="screen"></section>
       <section id="screen-sent" class="screen"></section>
       <section id="screen-activity" class="screen"></section>
+      <section id="screen-quote" class="screen"></section>
     </main>
   </div>
 
@@ -496,7 +497,7 @@
   </div>
 
 <script>
-const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzphL0rBbZKdAlX2gpztzOo2OhO1sdjW2K6wDDIuZ12D2X0v33AVrmLGHif5yU8Jp6_/exec";
+const BACKEND_URL = "https://script.google.com/macros/s/AKfycbzC6FL-fyyVvW3TTdcOoxEK-_61ZvOkxFH9ESJ1hMPeLT5gnTilw1GHYy2JZ24AJARu/exec";
 const state = {
   token: localStorage.getItem("sb_v5_token") || "",
   user: JSON.parse(localStorage.getItem("sb_v5_user") || "null"),
@@ -603,6 +604,7 @@ function roleConfig() {
       ["users","Tài khoản & phân quyền"],
       ["library","Tài liệu Sunbot"],
       ["pricebook","Bảng giá"],
+["quote","Tạo báo giá"],
       ["create","Thêm khách/cơ hội"],
       ["accounts","Khách hàng & cơ hội"],
       ["sent","Lịch sử gửi"],
@@ -630,6 +632,7 @@ function roleConfig() {
       ["create","Thêm khách/cơ hội"],
       ["library","Tài liệu được phép gửi"],
       ["pricebook","Bảng giá"],
+["quote","Tạo báo giá"],
       ["accounts","Khách tôi phụ trách"],
       ["sent","Lịch sử tôi đã gửi"]
     ]
@@ -740,6 +743,7 @@ async function renderCurrent() {
   if (state.current === "home") renderHome();
   if (state.current === "library") renderLibrary();
   if (state.current === "pricebook") renderPricebook();
+if (state.current === "quote") renderQuote();
   if (state.current === "create") renderCreate();
   if (state.current === "accounts") renderAccounts();
   if (state.current === "sent") renderSent();
@@ -1490,7 +1494,291 @@ async function copyText(text) {
   }
 }
 
-// v5.1: tối ưu phân loại tài liệu và ẩn các bộ tài liệu trống trong thư viện.
+
+function quoteMoney(v) {
+  const n = Number(v || 0);
+  return n ? new Intl.NumberFormat('vi-VN').format(n) + 'đ' : '—';
+}
+
+function quoteNumber(v) {
+  const n = Number(v || 0);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function quoteDateVN(d = new Date()) {
+  return d.toLocaleDateString('vi-VN');
+}
+
+function getQuoteInputMeta() {
+  return {
+    clientName: byId('quoteClientName')?.value?.trim() || '',
+    contactName: byId('quoteContactName')?.value?.trim() || '',
+    region: byId('quoteRegion')?.value?.trim() || '',
+    quoteNote: byId('quoteNote')?.value?.trim() || ''
+  };
+}
+
+
+function getQuoteIssuerLine() {
+  const user = state.user || {};
+  if (state.roleKind === 'admin') return 'Sunbot / CEO';
+  const fullName = user.FullName || '';
+  const username = user.Username || user.UserID || '';
+  if (fullName && username && fullName !== username) return 'Sunbot / ' + fullName + ' (' + username + ')';
+  if (fullName || username) return 'Sunbot / ' + (fullName || username);
+  return 'Sunbot';
+}
+
+function enrichQuoteWithInput(q) {
+  const meta = getQuoteInputMeta();
+  q.ClientName = q.ClientName || meta.clientName;
+  q.ContactName = q.ContactName || meta.contactName;
+  q.Region = q.Region || meta.region;
+  q.QuoteNote = q.QuoteNote || meta.quoteNote;
+  q.QuotedDate = q.QuotedDate || quoteDateVN();
+  q.QuotedBy = q.QuotedBy || getQuoteIssuerLine();
+  return q;
+}
+
+function renderQuote() {
+  const el = byId('screen-quote');
+  if (!el) return;
+
+  const canQuote = state.roleKind === 'admin' || state.roleKind === 'staff' || state.permissions.CanCreateQuote;
+  if (!canQuote) {
+    el.innerHTML = `<div class="card"><div class="empty">Tài khoản này chưa có quyền tạo báo giá.</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `
+    <div class="card">
+      <span class="section-label">Quote Generator · Phase 3</span>
+      <h2 class="h2">Tạo báo giá Sunbot</h2>
+      <p class="p">Báo giá lấy dữ liệu động từ Pricebook Master. Bản khách hàng gọn để trình chiếu/in PDF; bản nội bộ dùng để kiểm soát cấu phần.</p>
+
+      <div class="soft-card" style="margin-top:16px;">
+        <h3 class="h3">Thông tin bên được báo giá</h3>
+        <div class="grid grid-4" style="margin-top:12px;">
+          <div class="field"><label class="label">Tên bên được báo giá</label><input id="quoteClientName" class="input" placeholder="VD: Trường Mầm non Hoa Sen" /></div>
+          <div class="field"><label class="label">Người liên hệ</label><input id="quoteContactName" class="input" placeholder="VD: Cô Lan / Ms. Hoa" /></div>
+          <div class="field"><label class="label">Khu vực</label><input id="quoteRegion" class="input" placeholder="VD: Hà Nội / Nghệ An" /></div>
+          <div class="field"><label class="label">Ghi chú báo giá</label><input id="quoteNote" class="input" placeholder="VD: Báo giá sau buổi demo" /></div>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="margin-top:16px;">
+        <div class="field"><label class="label">Loại khách hàng</label><select id="quoteClientType" class="select"><option>Trường tư</option><option>Trường công</option><option>Đối tác triển khai</option><option>Nhà thầu/khu trải nghiệm</option><option>Thư viện/dự án công</option></select></div>
+        <div class="field"><label class="label">Gói chính</label><select id="quotePackage" class="select"><option value="SBR-CORE">Sunbot Robotics</option><option value="SBR-PLUS" selected>Sunbot Robotics Plus</option></select></div>
+        <div class="field"><label class="label">Số năm tính báo giá</label><select id="quoteYears" class="select"><option value="1">1 năm</option><option value="2">2 năm</option><option value="3" selected>3 năm</option></select></div>
+        <div class="field"><label class="label">Số điểm/lớp/gói triển khai</label><input id="quoteQuantity" class="input" type="number" min="1" value="1" /></div>
+        <div class="field"><label class="label">Creative Technology</label><select id="quoteCreative" class="select"><option value="no" selected>Không thêm</option><option value="yes">Thêm lớp trải nghiệm sáng tạo</option></select></div>
+        <div class="field"><label class="label">Future Lab</label><select id="quoteFutureLab" class="select"><option value="no" selected>Không thêm</option><option value="yes">Thêm khu trải nghiệm/lab</option></select></div>
+        <div class="field"><label class="label">Display Option</label><select id="quoteDisplay" class="select"><option value="">Không chọn thiết bị hiển thị</option><option value="D01">D01 · TV sẵn có + Android Box</option><option value="D02">D02 · TV + Android Box</option><option value="D03">D03 · Tablet giáo viên</option><option value="D04">D04 · Màn hình cảm ứng</option><option value="D05">D05 · Future Lab Display</option></select></div>
+      </div>
+      <div style="margin-top:18px; display:flex; gap:10px; flex-wrap:wrap;"><button class="btn btn-primary" onclick="createQuotePreview()">Tạo preview báo giá</button><button class="btn btn-white" onclick="clearQuotePreview()">Xóa preview</button></div>
+      <div id="quoteMsg" class="msg"></div>
+    </div>
+    <div id="quoteResult" style="margin-top:14px;"></div>`;
+}
+
+async function createQuotePreview() {
+  const meta = getQuoteInputMeta();
+  const payload = {
+    action: 'create_quote_preview',
+    token: state.token,
+    quote: {
+      clientType: byId('quoteClientType').value,
+      clientName: meta.clientName,
+      contactName: meta.contactName,
+      region: meta.region,
+      quoteNote: meta.quoteNote,
+      packageId: byId('quotePackage').value,
+      years: Number(byId('quoteYears').value || 3),
+      quantity: Number(byId('quoteQuantity').value || 1),
+      includeCreative: byId('quoteCreative').value === 'yes',
+      includeFutureLab: byId('quoteFutureLab').value === 'yes',
+      displayOptionId: byId('quoteDisplay').value
+    }
+  };
+  setMsg('quoteMsg', 'Đang tính báo giá...', '');
+  try {
+    const r = await api(payload);
+    if (!r.success) throw new Error(r.message || 'Không tạo được báo giá.');
+    const q = enrichQuoteWithInput(r.quote);
+    window.__quoteViewMode = getDefaultQuoteViewMode();
+    renderQuoteResult(q);
+    setMsg('quoteMsg', 'Đã tạo preview báo giá.', 'ok');
+  } catch (e) {
+    setMsg('quoteMsg', e.message, 'error');
+  }
+}
+
+function clearQuotePreview() {
+  const el = byId('quoteResult');
+  if (el) el.innerHTML = '';
+  window.__lastSunbotQuote = null;
+  setMsg('quoteMsg', '', '');
+}
+
+function getQuoteExclusions(q) {
+  return [
+    'Chưa bao gồm VAT nếu chưa được ghi rõ trong hợp đồng/báo giá chính thức.',
+    'Chưa bao gồm TV, màn hình cảm ứng, tablet hoặc thiết bị hiển thị nếu không được chọn trong báo giá.',
+    'Không bao gồm bảo hành thiết bị do nhà trường/đối tác tự mua ngoài hệ thống Sunbot.',
+    'Không bao gồm vật tư tiêu hao ngoài phạm vi Project/Kit đã chọn.',
+    'Không bao gồm hỗ trợ vận hành không giới hạn ngoài phạm vi đào tạo, support và QA đã định nghĩa.'
+  ];
+}
+
+function getQuoteTerms(q) {
+  return [
+    'Báo giá preview phục vụ tư vấn nội bộ và làm cơ sở trao đổi ban đầu.',
+    'Báo giá chính thức cần được duyệt theo thẩm quyền của Kiro/Sunbot trước khi gửi khách hàng.',
+    'Annual Learning System là khoản duy trì hệ học tập, cập nhật nhiệm vụ, hỗ trợ vận hành và đảm bảo chất lượng triển khai.'
+  ];
+}
+
+function getDefaultQuoteViewMode() {
+  return (state && state.roleKind === 'admin') ? 'internal' : 'customer';
+}
+function setQuoteViewMode(mode) {
+  window.__quoteViewMode = mode || 'customer';
+  if (window.__lastSunbotQuote) renderQuoteResult(window.__lastSunbotQuote);
+}
+function quoteComponentLabel(type) {
+  const t = String(type || '').toLowerCase();
+  if (t.includes('hardware')) return 'Thiết bị & học cụ robot';
+  if (t.includes('digital')) return 'Hệ bài học số & nhiệm vụ';
+  if (t.includes('service')) return 'Dịch vụ triển khai & đào tạo';
+  if (t.includes('creative')) return 'Hoạt động sáng tạo';
+  if (t.includes('project')) return 'Hoạt động dự án';
+  if (t.includes('display')) return 'Thiết bị hiển thị tùy chọn';
+  if (t.includes('audit') || t.includes('quality')) return 'Đảm bảo chất lượng';
+  return type || 'Cấu phần triển khai';
+}
+function uniqueJoin(arr, sep) {
+  const seen = {}, out = [];
+  (arr || []).forEach(x => {
+    const v = String(x || '').trim();
+    if (!v || seen[v]) return;
+    seen[v] = true;
+    out.push(v);
+  });
+  return out.join(sep || '; ');
+}
+function getComponentPrice(c) {
+  return quoteNumber(c.TotalPrice || c.ComponentTotalPrice || c.ProposedSellingPrice || c.ComponentPrice || c.Price || c.ClientPrice || c.SellingPrice || c['Giá bán đề xuất'] || c['Giá cấu phần'] || c['Giá'] || 0);
+}
+function componentPriceText(c) {
+  const p = getComponentPrice(c);
+  return p ? quoteMoney(p) : 'Bao gồm trong gói';
+}
+function compactCustomerComponents(q) {
+  const components = q.ComponentLines || [];
+  const grouped = {};
+  components.forEach(c => {
+    const key = quoteComponentLabel(c.ComponentType || c.ProductName || 'Khác');
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(c);
+  });
+  const rows = Object.keys(grouped).map(group => {
+    const items = grouped[group];
+    const total = items.reduce((s, c) => s + getComponentPrice(c), 0);
+    return {
+      group,
+      scope: uniqueJoin(items.map(c => c.ComponentName).filter(Boolean), '; '),
+      description: uniqueJoin(items.map(c => c.Description).filter(Boolean), ' '),
+      price: total,
+      priceText: total ? quoteMoney(total) : 'Bao gồm trong gói',
+      note: uniqueJoin(items.map(c => c.Note).filter(Boolean), ' ')
+    };
+  });
+  if (!rows.length) rows.push({ group:'Cấu hình chương trình', scope:'Cấu hình theo Pricebook Master', description:'Chưa có cấu phần chi tiết từ COMPONENT_MASTER.', price:0, priceText:'Theo gói', note:'Cần kiểm tra mapping ProductID trong sheet dữ liệu.' });
+  return rows;
+}
+
+function renderQuoteResult(q) {
+  window.__lastSunbotQuote = q;
+  const el = byId('quoteResult');
+  if (!el) return;
+  const mode = window.__quoteViewMode || getDefaultQuoteViewMode();
+  const lines = q.Lines || [], componentLines = q.ComponentLines || [], customerComponents = compactCustomerComponents(q), s = q.Summary || {}, exclusions = getQuoteExclusions(q);
+  const clientBlock = `<div class="soft-card" style="margin-top:16px;"><h3 class="h3">Thông tin báo giá</h3><div class="grid grid-4" style="margin-top:12px;">${stat('Bên được báo giá', esc(q.ClientName || 'Chưa nhập'), 'Tên sẽ hiển thị trên PDF')}${stat('Ngày báo giá', esc(q.QuotedDate || quoteDateVN()), 'Ngày tạo/in báo giá')}${stat('Người liên hệ', esc(q.ContactName || '—'), 'Thông tin tư vấn')}${stat('Khu vực', esc(q.Region || '—'), 'Phân vùng cơ hội')}</div>${q.QuoteNote ? `<p class="p"><b>Ghi chú:</b> ${esc(q.QuoteNote)}</p>` : ''}</div>`;
+  const viewSwitcher = `<div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px;"><label class="label" style="margin:0;">Chế độ xem</label><select id="quoteViewMode" class="select" style="width:auto; min-width:230px;" onchange="setQuoteViewMode(this.value)"><option value="customer" ${mode==='customer'?'selected':''}>Tư vấn khách hàng</option><option value="internal" ${mode==='internal'?'selected':''}>Nội bộ / kiểm soát cấu phần</option></select><span class="doc-meta">PDF luôn dùng bản tư vấn khách hàng, không lộ mã/cột nội bộ.</span></div>`;
+  const customerConfigTable = `<div class="soft-card" style="margin-top:16px;"><h3 class="h3">Cấu hình cung cấp</h3><p class="p">Bản gọn để tư vấn khách hàng. Có giá cấu phần thương mại cuối cùng nếu Pricebook Master có dữ liệu giá cấu phần; không hiển thị mã nội bộ.</p><div class="table-wrap" style="margin-top:12px;"><table style="min-width:860px;"><thead><tr><th>Nhóm cấu hình</th><th>Nội dung cung cấp</th><th>Ý nghĩa triển khai</th><th>Giá cấu phần</th></tr></thead><tbody>${customerComponents.map(c=>`<tr><td><b>${esc(c.group||'')}</b></td><td>${esc(c.scope||'')}</td><td>${esc(c.description||c.note||'')}</td><td><b>${esc(c.priceText||'Bao gồm trong gói')}</b></td></tr>`).join('')}</tbody></table></div></div>`;
+  const internalConfigTable = `<div class="soft-card" style="margin-top:16px;"><h3 class="h3">Cấu hình chi tiết đọc từ Pricebook Master</h3><p class="p">Bản nội bộ để kiểm soát dữ liệu từ <b>COMPONENT_MASTER</b>. Không nên trình chiếu trực tiếp cho khách hàng.</p><div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th>Gói/Product</th><th>Nhóm cấu phần</th><th>Cấu phần</th><th>Mô tả</th><th>Số lượng</th><th>Năm</th><th>Bắt buộc</th><th>Giá cấu phần</th><th>Ghi chú</th></tr></thead><tbody>${componentLines.length?componentLines.map(c=>`<tr><td><b>${esc(c.ProductID||'')}</b><div class="doc-meta">${esc(c.ProductName||'')}</div></td><td>${esc(c.ComponentType||'')}</td><td><b>${esc(c.ComponentName||'')}</b><div class="doc-meta">${esc(c.ComponentID||'')}</div></td><td>${esc(c.Description||'')}</td><td>${esc(c.Quantity||'')} ${esc(c.Unit||'')}</td><td>${esc(c.Year||'')}</td><td>${esc(c.Required||'')}</td><td><b>${componentPriceText(c)}</b></td><td>${esc(c.Note||'')}</td></tr>`).join(''):`<tr><td colspan="9">Chưa có cấu phần chi tiết. Cần kiểm tra sheet COMPONENT_MASTER và cột ProductID/ComponentName.</td></tr>`}</tbody></table></div></div>`;
+  const customerPriceTable = `<div class="card" style="margin-top:16px; box-shadow:none;"><span class="section-label">Pricing Summary</span><h3 class="h3" style="margin-top:10px;">Chi tiết giá theo nhóm</h3><p class="p">Bản gọn cho khách hàng: không hiển thị mã nội bộ và ghi chú vận hành.</p><div class="table-wrap" style="margin-top:12px;"><table style="min-width:860px;"><thead><tr><th>Nhóm</th><th>Hạng mục</th><th>Số lượng</th><th>Năm 1</th><th>Năm 2</th><th>Năm 3</th><th>Tổng</th></tr></thead><tbody>${lines.map(line=>`<tr><td>${esc(line.Section||'')}</td><td>${esc(line.Name||'')}</td><td>${esc(line.Quantity||1)}</td><td><b>${quoteMoney(line.Year1)}</b></td><td>${quoteMoney(line.Year2)}</td><td>${quoteMoney(line.Year3)}</td><td><b>${quoteMoney(line.Total)}</b></td></tr>`).join('')}</tbody></table></div></div>`;
+  const internalPriceTable = `<div class="card" style="margin-top:16px; box-shadow:none;"><span class="section-label">Pricing Lines</span><h3 class="h3" style="margin-top:10px;">Chi tiết giá theo nhóm</h3><p class="p">Bản nội bộ: có mã dòng giá và ghi chú để kiểm soát logic.</p><div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th>Nhóm</th><th>Mã</th><th>Hạng mục</th><th>Số lượng</th><th>Năm 1</th><th>Năm 2</th><th>Năm 3</th><th>Tổng</th><th>Ghi chú</th></tr></thead><tbody>${lines.map(line=>`<tr><td>${esc(line.Section||'')}</td><td><b>${esc(line.Code||'')}</b></td><td>${esc(line.Name||'')}</td><td>${esc(line.Quantity||1)}</td><td><b>${quoteMoney(line.Year1)}</b></td><td>${quoteMoney(line.Year2)}</td><td>${quoteMoney(line.Year3)}</td><td><b>${quoteMoney(line.Total)}</b></td><td>${esc(line.Note||'')}</td></tr>`).join('')}</tbody></table></div></div>`;
+  el.innerHTML = `<div class="card"><span class="section-label">Quote Preview</span><h2 class="h2">Báo giá preview · ${esc(q.QuoteID||'')}</h2><p class="p">Gói: <b>${esc(q.PackageName||q.PackageID||'')}</b> · Loại khách: <b>${esc(q.ClientType||'')}</b> · Số năm: <b>${esc(q.Years||'')}</b> · Số lượng: <b>${esc(q.Quantity||'')}</b></p>${viewSwitcher}${clientBlock}<div class="grid grid-4" style="margin-top:16px;">${stat('Năm 1',quoteMoney(s.Year1),'Triển khai ban đầu')}${stat('Năm 2',quoteMoney(s.Year2),'Duy trì/mở rộng')}${stat('Năm 3',quoteMoney(s.Year3),'Duy trì/mở rộng')}${stat('Tổng',quoteMoney(s.GrandTotal),'Tổng theo số năm')}</div>${mode==='internal'?internalConfigTable:customerConfigTable}${mode==='internal'?internalPriceTable:customerPriceTable}<div class="soft-card" style="margin-top:16px;"><h3 class="h3">Chưa bao gồm</h3><ul style="margin:10px 0 0; color:var(--slate-600); line-height:1.7;">${exclusions.map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div><div class="soft-card" style="margin-top:16px;"><h3 class="h3">Ghi chú báo giá</h3><ul style="margin:10px 0 0; color:var(--slate-600); line-height:1.7;">${(q.Notes||getQuoteTerms(q)).map(n=>`<li>${esc(n)}</li>`).join('')}</ul></div><div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;"><button class="btn btn-soft" onclick="copyQuoteText()">Copy nội dung báo giá</button><button class="btn btn-white" onclick="saveQuoteDeal()">Lưu bên được báo giá vào theo dõi</button><button class="btn btn-primary" onclick="exportQuotePDF()">Xuất PDF</button></div><div id="quoteActionMsg" class="msg"></div><textarea id="quoteCopyText" class="hidden">${esc(formatQuoteText(q))}</textarea></div>`;
+}
+
+function formatQuoteText(q) {
+  const s=q.Summary||{}, lines=q.Lines||[], components=compactCustomerComponents(q), exclusions=getQuoteExclusions(q);
+  return ['BÁO GIÁ PREVIEW SUNBOT','Mã báo giá: '+(q.QuoteID||''),'Ngày báo giá: '+(q.QuotedDate||quoteDateVN()),'Đơn vị báo giá: '+(q.QuotedBy||getQuoteIssuerLine()),'Bên được báo giá: '+(q.ClientName||''),'Người liên hệ: '+(q.ContactName||''),'Khu vực: '+(q.Region||''),'Gói: '+(q.PackageName||q.PackageID||''),'Loại khách: '+(q.ClientType||''),'Số năm: '+(q.Years||''),'Số lượng: '+(q.Quantity||''),'','CẤU HÌNH CUNG CẤP:',...components.map(c=>'- '+(c.group||'')+': '+(c.scope||'')+(c.description?' — '+c.description:'')+' | Giá: '+(c.priceText||'Bao gồm trong gói')),'','CHI TIẾT GIÁ:',...lines.map(l=>'- '+(l.Name||'')+': '+quoteMoney(l.Total||0)),'','TỔNG NĂM 1: '+quoteMoney(s.Year1||0),'TỔNG NĂM 2: '+quoteMoney(s.Year2||0),'TỔNG NĂM 3: '+quoteMoney(s.Year3||0),'TỔNG CỘNG: '+quoteMoney(s.GrandTotal||0),'','CHƯA BAO GỒM:',...exclusions.map(x=>'- '+x),'','Ghi chú: Báo giá preview, chưa phải báo giá chính thức có ký duyệt.'].join('\n');
+}
+function copyQuoteText(){const text=byId('quoteCopyText')?.value||''; copyText(text);}
+
+async function logQuoteEvent(eventType, extra={}) {
+  const q = window.__lastSunbotQuote;
+  if (!q) return;
+  try {
+    await api({ action:'log_quote_event', token:state.token, eventType, quote:{...q, ...extra} });
+  } catch(e) {
+    console.warn('Không ghi được QUOTE_LOG:', e.message);
+  }
+}
+
+async function saveQuoteDeal() {
+  const q = window.__lastSunbotQuote;
+  if (!q) { alert('Chưa có báo giá để lưu.'); return; }
+  if (!q.ClientName) { alert('Cần nhập tên bên được báo giá trước khi lưu vào theo dõi.'); return; }
+  setMsg('quoteActionMsg','Đang lưu vào theo dõi...','');
+  const account = {
+    AccountName: q.ClientName,
+    AccountType: q.ClientType || 'Khách báo giá',
+    Region: q.Region || '',
+    LeadSource: 'Quote Generator / Growth OS',
+    PotentialLevel: 'B',
+    Stage: 'Đang báo giá',
+    Status: 'Active',
+    Notes: [`Mã báo giá: ${q.QuoteID || ''}`, `Gói: ${q.PackageName || q.PackageID || ''}`, `Tổng: ${quoteMoney(q.Summary?.GrandTotal || 0)}`, q.ContactName ? `Người liên hệ: ${q.ContactName}` : '', q.QuoteNote || ''].filter(Boolean).join('\n')
+  };
+  try {
+    const r = await api({ action:'create_account', token:state.token, account });
+    if (!r.success) throw new Error(r.message || 'Không lưu được khách/cơ hội.');
+    if (r.account) state.data.accounts.push(r.account);
+    q.AccountID = r.account?.AccountID || '';
+    await logQuoteEvent('SAVE_DEAL', { AccountID:q.AccountID });
+    setMsg('quoteActionMsg','Đã lưu vào theo dõi: '+(q.AccountID || q.ClientName),'ok');
+  } catch(e) {
+    setMsg('quoteActionMsg', e.message, 'error');
+  }
+}
+
+async function exportQuotePDF() {
+  const q = window.__lastSunbotQuote;
+  if (!q) { alert('Chưa có báo giá để xuất PDF.'); return; }
+  await logQuoteEvent('PDF_EXPORT');
+  const w = window.open('', '_blank');
+  if (!w) { alert('Trình duyệt đang chặn popup. Hãy cho phép popup để xuất PDF.'); return; }
+  w.document.open();
+  w.document.write(buildQuotePDFHTML(q));
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print();},500);
+}
+
+function buildQuotePDFHTML(q) {
+  const s=q.Summary||{}, lines=q.Lines||[], components=compactCustomerComponents(q), exclusions=getQuoteExclusions(q), terms=getQuoteTerms(q), logo='https://static.sunbot.vn/static/images/lesson/11461/logo-sunbot-1.png';
+  function row(cells){return '<tr>'+cells.map(c=>'<td>'+c+'</td>').join('')+'</tr>';}
+  const componentRows=components.map(c=>row(['<b>'+esc(c.group||'')+'</b>',esc(c.scope||''),esc(c.description||c.note||''),'<b>'+esc(c.priceText||'Bao gồm trong gói')+'</b>'])).join('');
+  const lineRows=lines.map(l=>row([esc(l.Section||''),esc(l.Name||''),esc(l.Quantity||1),'<b>'+quoteMoney(l.Year1)+'</b>',quoteMoney(l.Year2),quoteMoney(l.Year3),'<b>'+quoteMoney(l.Total)+'</b>'])).join('');
+  const recipientLine = q.ClientName ? ('Quý Trường/Quý Đơn vị ' + q.ClientName) : 'Quý Trường/Quý Đơn vị';
+  const subjectLine = 'Về việc: Báo giá triển khai ' + (q.PackageName || q.PackageID || 'chương trình Sunbot');
+  const introLine = 'Sunbot trân trọng gửi Quý đơn vị báo giá tham khảo cho cấu hình chương trình đã trao đổi. Báo giá này là cơ sở để hai bên thảo luận phạm vi triển khai, thiết bị, đào tạo và duy trì hệ thống học tập.';
+  return `<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>Báo giá Sunbot ${esc(q.QuoteID||'')}</title><style>@page{size:A4;margin:12mm}body{font-family:Arial,sans-serif;color:#1e293b;margin:0;font-size:11px;line-height:1.4}.header{display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid #f97316;padding-bottom:12px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:12px}.brand img{width:54px;height:54px;object-fit:contain}h1{font-size:23px;margin:0;color:#c2410c}h2{font-size:15px;color:#c2410c;margin:18px 0 8px}.muted{color:#64748b}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 16px}.box{border:1px solid #fed7aa;background:#fff7ed;border-radius:10px;padding:9px}.box .label{font-size:9px;color:#64748b;text-transform:uppercase;font-weight:bold}.box .value{margin-top:5px;font-size:14px;font-weight:bold;color:#1e293b}table{width:100%;border-collapse:collapse;margin-top:8px}th{background:#fff7ed;color:#9a3412;text-align:left;font-size:9px;text-transform:uppercase;border:1px solid #fed7aa;padding:6px}td{border:1px solid #fed7aa;padding:6px;vertical-align:top}ul{margin-top:6px;padding-left:18px}.note{background:#f8fafc;border:1px solid #e2e8f0;padding:10px;border-radius:10px}.recipient{border:1px solid #fed7aa;background:#fff7ed;border-radius:12px;padding:12px;margin:12px 0 14px}.recipient-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}.recipient p{margin:8px 0 0;color:#475569}.footer{margin-top:22px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#64748b}.print-actions{position:fixed;right:16px;top:16px}.print-actions button{border:0;background:#f97316;color:white;padding:10px 14px;border-radius:10px;font-weight:bold;cursor:pointer}@media print{.print-actions{display:none}}</style></head><body><div class="print-actions"><button onclick="window.print()">In / Lưu PDF</button></div><div class="header"><div class="brand"><img src="${logo}"><div><h1>BÁO GIÁ SUNBOT</h1><div class="muted">Hệ học tập công nghệ sáng tạo lấy robot làm trung tâm</div></div></div><div style="text-align:right"><div><b>Mã:</b> ${esc(q.QuoteID||'')}</div><div><b>Ngày báo giá:</b> ${esc(q.QuotedDate||quoteDateVN())}</div><div><b>Bên được báo giá:</b> ${esc(q.ClientName||'')}</div><div><b>Người liên hệ:</b> ${esc(q.ContactName||'')}</div><div><b>Gói:</b> ${esc(q.PackageName||q.PackageID||'')}</div><div><b>Người báo giá:</b> ${esc(q.QuotedBy || getQuoteIssuerLine())}</div></div></div><div class="recipient"><div class="recipient-grid"><div><b>Kính gửi:</b> ${esc(recipientLine)}</div><div><b>Ngày báo giá:</b> ${esc(q.QuotedDate||quoteDateVN())}</div><div><b>Người liên hệ:</b> ${esc(q.ContactName||"")}</div><div><b>Khu vực:</b> ${esc(q.Region||"")}</div><div><b>Đơn vị báo giá:</b> ${esc(q.QuotedBy || getQuoteIssuerLine())}</div><div><b>Mã báo giá:</b> ${esc(q.QuoteID||"")}</div></div><p><b>${esc(subjectLine)}</b></p><p>${esc(introLine)}</p></div><div class="note"><b>Lưu ý:</b> Đây là báo giá preview phục vụ trao đổi ban đầu. Báo giá chính thức cần được Kiro/Sunbot xác nhận trước khi gửi khách hàng hoặc đưa vào hợp đồng.</div><div class="summary"><div class="box"><div class="label">Năm 1</div><div class="value">${quoteMoney(s.Year1)}</div></div><div class="box"><div class="label">Năm 2</div><div class="value">${quoteMoney(s.Year2)}</div></div><div class="box"><div class="label">Năm 3</div><div class="value">${quoteMoney(s.Year3)}</div></div><div class="box"><div class="label">Tổng cộng</div><div class="value">${quoteMoney(s.GrandTotal)}</div></div></div><h2>1. Cấu hình cung cấp</h2><table><thead><tr><th>Nhóm cấu hình</th><th>Nội dung cung cấp</th><th>Ý nghĩa triển khai</th><th>Giá cấu phần</th></tr></thead><tbody>${componentRows}</tbody></table><h2>2. Chi tiết giá theo nhóm</h2><table><thead><tr><th>Nhóm</th><th>Hạng mục</th><th>SL</th><th>Năm 1</th><th>Năm 2</th><th>Năm 3</th><th>Tổng</th></tr></thead><tbody>${lineRows}</tbody></table><h2>3. Chưa bao gồm</h2><ul>${exclusions.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul><h2>4. Điều kiện và ghi chú</h2><ul>${terms.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul><div class="footer">Sunbot/Kiro Việt Nam · Báo giá preview từ Sunbot Growth OS · Không hiển thị giá vốn, margin hoặc giả định nội bộ.</div></body></html>`;
+}
+
+
 if (state.token && state.user) {
   showApp();
   refreshData(true);
